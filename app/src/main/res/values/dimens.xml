@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="space_normal">16dp</dimen>
+    <dimen name="space_medium">8dp</dimen>
+    <dimen name="pokeball_size">32dp</dimen>
+
 
     <dimen name="font_size_header">28sp</dimen>
 </resources>

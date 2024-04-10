@@ -11,8 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.pokedex.home.presentation.HomeScreen
 import com.example.pokedex.home.presentation.viewmodel.HomeViewModel
+import com.example.pokedex.pokemondetail.presentation.PokemonDetailScreen
+import com.example.pokedex.routes.Routes
+import com.example.pokedex.team.presentation.TeamScreen
 import com.example.pokedex.ui.theme.PokedexTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,7 +36,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeScreen(homeViewModel)
+                    val navigationController = rememberNavController()
+                    NavHost(
+                        navController = navigationController,
+                        startDestination = Routes.ScreenHome.route
+                    ) {
+                        composable(Routes.ScreenHome.route) {
+                            HomeScreen(
+                                homeViewModel = homeViewModel,
+                                navigationController
+                            )
+                        }
+                        composable(Routes.ScreenDetail.route) { PokemonDetailScreen(navigationController) }
+                        composable(Routes.ScreenTeam.route){ TeamScreen(navigationController)}
+                    }
+
                 }
             }
         }
