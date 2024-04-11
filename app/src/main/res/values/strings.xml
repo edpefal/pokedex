@@ -4,4 +4,6 @@
     <string name="content_description_pokemon_image">Pokemon image</string>
     <string name="home_header_title">Pokedex</string>
     <string name="home_header_search_placeholder">Write the pokemon name or number</string>
+    <string name="home_empty_pokemon">There are no pokemon yet, try searching by name or number.</string>
+    <string name="home_error_message">We didn\'t find any pokemon :), try with another name</string>
 </resources>

@@ -3,15 +3,31 @@ package com.example.pokedex.home.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.pokedex.home.domain.GetPokemonUseCase
+import com.example.pokedex.home.presentation.HomeUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(): ViewModel() {
+class HomeViewModel @Inject constructor(private val getPokemonUseCase: GetPokemonUseCase) :
+    ViewModel() {
     private val _inputSearch = MutableLiveData<String>()
     val inputSearch: LiveData<String> = _inputSearch
 
-    fun onInputText(inputText: String){
+    private val _homeViewState = MutableLiveData<HomeUIState>()
+    val homeViewState: LiveData<HomeUIState> = _homeViewState
+
+    fun onInputText(inputText: String) {
         _inputSearch.value = inputText
+    }
+
+    fun onSearchSelected(){
+        viewModelScope.launch {
+            val response = getPokemonUseCase.invoke(_inputSearch.value.orEmpty())
+            _homeViewState.postValue(response)
+
+        }
     }
 }

@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokedex.R
-import com.example.pokedex.home.data.Pokemon
+import com.example.pokedex.home.data.model.PokemonResponse
 import com.example.pokedex.routes.Routes
 import kotlinx.coroutines.launch
 
@@ -70,12 +70,12 @@ fun Body(navigationController: NavHostController) {
         })
 }
 
-fun getPokemons(): List<Pokemon> {
-    return listOf(Pokemon(), Pokemon(), Pokemon(), Pokemon(), Pokemon())
+fun getPokemons(): List<PokemonResponse> {
+    return listOf(PokemonResponse(), PokemonResponse(), PokemonResponse(), PokemonResponse(), PokemonResponse())
 }
 
 @Composable
-fun ItemPokemonTeam(pokemon: Pokemon, onItemSelected: (Pokemon) -> Unit) {
+fun ItemPokemonTeam(pokemon: PokemonResponse, onItemSelected: (PokemonResponse) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

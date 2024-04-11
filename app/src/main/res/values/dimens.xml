@@ -6,4 +6,5 @@
 
 
     <dimen name="font_size_header">28sp</dimen>
+    <dimen name="font_size_empty_state_message">30sp</dimen>
 </resources>

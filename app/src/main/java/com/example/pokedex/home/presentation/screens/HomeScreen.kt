@@ -1,6 +1,5 @@
-package com.example.pokedex.home.presentation
+package com.example.pokedex.home.presentation.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,7 +7,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -27,38 +29,90 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokedex.R
-import com.example.pokedex.home.data.Pokemon
+import com.example.pokedex.home.presentation.HomeUIState
+import com.example.pokedex.home.presentation.model.PokemonModel
 import com.example.pokedex.home.presentation.viewmodel.HomeViewModel
 import com.example.pokedex.routes.Routes
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, navigationController: NavHostController) {
+    val homeUiState: HomeUIState by homeViewModel.homeViewState.observeAsState(initial = HomeUIState.Empty)
     Box(Modifier.background(Color.Red)) {
         Column {
             Header(homeViewModel, Modifier.align(Alignment.End), navigationController)
-            Body(navigationController)
+            when (homeUiState) {
+                HomeUIState.Empty -> MessageInBody(stringResource(id = R.string.home_empty_pokemon))
+
+                HomeUIState.Error -> MessageInBody(stringResource(id = R.string.home_error_message))
+                HomeUIState.Loading -> LoadingState()
+
+                is HomeUIState.Success -> {
+                    val pokemonModel = (homeUiState as HomeUIState.Success).pokemonModel
+                    Body(navigationController = navigationController, pokemon = pokemonModel)
+                }
+            }
+
         }
     }
 }
 
 @Composable
-fun Body(navigationController: NavHostController) {
+fun LoadingState() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun MessageInBody(message: String) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+
+        Text(
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = dimensionResource(id = R.dimen.space_normal)),
+            text = message, fontSize = dimensionResource(
+                id = R.dimen.font_size_empty_state_message
+            ).value.sp
+        )
+
+    }
+}
+
+@Composable
+fun Body(navigationController: NavHostController, pokemon: PokemonModel) {
     LazyVerticalGrid(
-        modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.space_normal)),
+        modifier = Modifier
+            .padding(top = dimensionResource(id = R.dimen.space_normal))
+            .background(Color.White)
+            .fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         columns = GridCells.Fixed(2),
         content = {
-            items(getPokemons()) {
+            items(listOf(pokemon)) {
                 ItemPokemon(pokemon = it) {
                     navigationController.navigate(Routes.ScreenDetail.route)
                 }
@@ -66,25 +120,33 @@ fun Body(navigationController: NavHostController) {
         })
 }
 
-fun getPokemons(): List<Pokemon> {
-    return listOf(Pokemon(), Pokemon(), Pokemon(), Pokemon(), Pokemon())
-}
-
 @Composable
-fun ItemPokemon(pokemon: Pokemon, onItemSelected: (Pokemon) -> Unit) {
+fun ItemPokemon(pokemon: PokemonModel, onItemSelected: (PokemonModel) -> Unit) {
     Card(
-        border = BorderStroke(2.dp, Color.Red),
         modifier = Modifier
             .width(200.dp)
+            .height(200.dp)
             .clickable { onItemSelected(pokemon) }) {
         Column {
             AsyncImage(
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
                 model = pokemon.image,
                 contentDescription = stringResource(id = R.string.content_description_pokemon_image),
             )
             Text(
-                text = pokemon.name.orEmpty(),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                fontSize = dimensionResource(id = R.dimen.font_size_header).value.sp,
+                fontWeight = FontWeight.Bold,
+                text = pokemon.name,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(
+                        bottom = dimensionResource(
+                            id = R.dimen.space_medium
+                        )
+                    )
             )
         }
     }
@@ -100,14 +162,17 @@ fun Header(
     val textInput by homeViewModel.inputSearch.observeAsState(initial = "")
     Title(navigationController)
     SearchInput(textInput) { homeViewModel.onInputText(it) }
-    SearchButton(modifier)
+    SearchButton(modifier, homeViewModel)
 }
 
 @Composable
-fun SearchButton(modifier: Modifier) {
+fun SearchButton(modifier: Modifier, homeViewModel: HomeViewModel) {
     Button(
-        modifier = modifier.padding(end = dimensionResource(id = R.dimen.space_normal)),
-        onClick = {}, colors = ButtonDefaults.buttonColors(
+        modifier = modifier.padding(
+            end = dimensionResource(id = R.dimen.space_normal),
+            bottom = dimensionResource(id = R.dimen.space_normal)
+        ),
+        onClick = { homeViewModel.onSearchSelected() }, colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
             disabledContainerColor = Color(0xFF78C8F9),
             contentColor = Color.Red,
