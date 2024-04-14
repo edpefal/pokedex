@@ -113,8 +113,8 @@ fun Body(navigationController: NavHostController, pokemon: PokemonModel) {
         columns = GridCells.Fixed(2),
         content = {
             items(listOf(pokemon)) {
-                ItemPokemon(pokemon = it) {
-                    navigationController.navigate(Routes.ScreenDetail.route)
+                ItemPokemon(pokemon = it) { pokemon->
+                    navigationController.navigate(Routes.ScreenDetail.createRoute(pokemon.id.toString()))
                 }
             }
         })

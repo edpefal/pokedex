@@ -12,14 +12,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.pokedex.home.presentation.screens.HomeScreen
 import com.example.pokedex.home.presentation.viewmodel.HomeViewModel
 import com.example.pokedex.pokemondetail.presentation.PokemonDetailScreen
+import com.example.pokedex.pokemondetail.presentation.PokemonDetailViewModel
 import com.example.pokedex.routes.Routes
 import com.example.pokedex.team.presentation.TeamScreen
+import com.example.pokedex.team.presentation.TeamViewModel
 import com.example.pokedex.ui.theme.PokedexTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,6 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val homeViewModel: HomeViewModel by viewModels()
+    private val pokemonDetailViewModel: PokemonDetailViewModel by viewModels()
+    private val teamViewModel: TeamViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +55,21 @@ class MainActivity : ComponentActivity() {
                                 navigationController
                             )
                         }
-                        composable(Routes.ScreenDetail.route) { PokemonDetailScreen(navigationController) }
-                        composable(Routes.ScreenTeam.route){ TeamScreen(navigationController)}
+                        composable(
+                            Routes.ScreenDetail.route,
+                            arguments = listOf(navArgument("pokemon") { type = NavType.StringType })
+                        ) {
+                            PokemonDetailScreen(
+                                navigationController,
+                                it.arguments?.getString("pokemon").orEmpty(),
+                                pokemonDetailViewModel
+                            )
+                        }
+                        composable(
+                            Routes.ScreenTeam.route
+                        ) {
+                            TeamScreen(navigationController, teamViewModel)
+                        }
                     }
 
                 }

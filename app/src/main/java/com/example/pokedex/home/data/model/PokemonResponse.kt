@@ -17,12 +17,7 @@ data class PokemonResponse(
     @SerializedName("types")
     var types: ArrayList<Types>? = null,
     @SerializedName("weight")
-    var weight: Int? = null,
-
-    @SerializedName("image")
-    val image: String? =
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png"
-
+    var weight: Int? = null
 )
 
 
