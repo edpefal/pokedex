@@ -21,7 +21,7 @@ import com.example.pokedex.home.presentation.screens.HomeScreen
 import com.example.pokedex.home.presentation.viewmodel.HomeViewModel
 import com.example.pokedex.pokemondetail.presentation.PokemonDetailScreen
 import com.example.pokedex.pokemondetail.presentation.PokemonDetailViewModel
-import com.example.pokedex.routes.Routes
+import com.example.pokedex.core.routes.Routes
 import com.example.pokedex.team.presentation.TeamScreen
 import com.example.pokedex.team.presentation.TeamViewModel
 import com.example.pokedex.ui.theme.PokedexTheme

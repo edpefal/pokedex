@@ -17,13 +17,13 @@ class HomeRepository @Inject constructor(
     private val pokemonDao: PokemonDao
 ) {
 
-    suspend fun getPokemon(pokemon: String): HomeUIState {
+    /*suspend fun getPokemon(pokemon: String): HomeUIState {
         return getPokemonFromLocalStorage(pokemon)?.let {
             HomeUIState.Success(it.toPokemonModel())
         } ?: run {
             getPokemonFromApi(pokemon)
         }
-    }
+    }*/
 
     suspend fun getPokemonFromApi(pokemonNameOrNumber: String): HomeUIState {
         return when (val result = homeService.getPokemon(pokemonNameOrNumber)) {
@@ -45,18 +45,13 @@ class HomeRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             pokemonDao.addPokemon(pokemonResponse.toPokemonEntity())
         }
-
-    }
-
-    suspend fun addPokemonToLocalStorage(pokemonResponse: PokemonResponse) {
-        //pokemonDao.addPokemon(pokemonResponse.toPokemonEntity())
     }
 
     suspend fun getPokemonFromLocalStorage(pokemon: String): PokemonEntity? {
         return pokemonDao.getPokemonByIdOrName(pokemon)
     }
 
-    private fun PokemonResponse.toPokemonEntity(): PokemonEntity {
+    fun PokemonResponse.toPokemonEntity(): PokemonEntity {
         return PokemonEntity(
             this.id ?: 0,
             this.height ?: 0,
@@ -68,11 +63,5 @@ class HomeRepository @Inject constructor(
         )
     }
 
-    private fun PokemonEntity.toPokemonModel(): PokemonModel {
-        return PokemonModel(
-            this.name,
-            this.sprites.frontDefault.orEmpty(),
-            this.id
-        )
-    }
+
 }

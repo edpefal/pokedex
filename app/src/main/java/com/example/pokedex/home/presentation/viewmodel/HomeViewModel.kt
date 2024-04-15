@@ -16,18 +16,27 @@ class HomeViewModel @Inject constructor(private val getPokemonUseCase: GetPokemo
     private val _inputSearch = MutableLiveData<String>()
     val inputSearch: LiveData<String> = _inputSearch
 
+    private val _isSearchEnable = MutableLiveData<Boolean>()
+    val isSearchEnable: LiveData<Boolean> = _isSearchEnable
+
     private val _homeViewState = MutableLiveData<HomeUIState>()
     val homeViewState: LiveData<HomeUIState> = _homeViewState
 
     fun onInputText(inputText: String) {
         _inputSearch.value = inputText
+        _isSearchEnable.value = isSearchEnable()
     }
 
-    fun onSearchSelected(){
-        viewModelScope.launch {
-            val response = getPokemonUseCase.invoke(_inputSearch.value.orEmpty())
-            _homeViewState.postValue(response)
 
+    fun isSearchEnable() = _inputSearch.value?.isNotEmpty() == true
+
+    fun onSearchSelected(){
+        if(isSearchEnable()) {
+            viewModelScope.launch {
+                val response = getPokemonUseCase.invoke(_inputSearch.value.orEmpty())
+                _homeViewState.postValue(response)
+
+            }
         }
     }
 }

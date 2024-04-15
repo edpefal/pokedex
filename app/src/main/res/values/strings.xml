@@ -5,7 +5,7 @@
     <string name="content_description_pokemon_detail_image">Pokemon detail image</string>
     <string name="home_header_title">Pokedex</string>
     <string name="home_header_search_placeholder">Write the pokemon name or number</string>
-    <string name="home_empty_pokemon">There are no Pokemons yet, try searching by name or number.</string>
+    <string name="home_empty_pokemon">Try searching for a Pokemon.</string>
     <string name="home_error_message">We didn\'t find any pokemon :), try with another name</string>
     <string name="pokemon_detail_error_message">An error occurred, try again later</string>
     <string name="pokemon_detail_toolbar_title">Pokemon information</string>
@@ -15,4 +15,5 @@
     <string name="team_member_deleted">Delete Pokemon</string>
     <string name="team_empty">You don\'t have any Pokemons in your team yet</string>
     <string name="team_error_message">An error occurred, try again later</string>
+    <string name="team_toolbar_title">My Team</string>
 </resources>

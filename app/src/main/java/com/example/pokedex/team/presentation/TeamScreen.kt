@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokedex.R
-import com.example.pokedex.routes.Routes
+import com.example.pokedex.core.routes.Routes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -227,11 +227,17 @@ fun ItemPokemonTeam(
 @Composable
 fun TeamTopAppBar(onClickIcon: (String) -> Unit) {
     TopAppBar(
-        title = { Text(text = "Mi primera toolbar") },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Red),
+        title = {
+            Text(
+                text = stringResource(id = R.string.team_toolbar_title),
+                fontWeight = FontWeight.Bold,
+                fontSize = 26.sp
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
         navigationIcon = {
             IconButton(onClick = { onClickIcon("Atras") }) {
-                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "back")
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
             }
         }
     )

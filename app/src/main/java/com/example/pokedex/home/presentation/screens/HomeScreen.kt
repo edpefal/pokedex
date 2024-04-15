@@ -43,7 +43,7 @@ import com.example.pokedex.R
 import com.example.pokedex.home.presentation.HomeUIState
 import com.example.pokedex.home.presentation.model.PokemonModel
 import com.example.pokedex.home.presentation.viewmodel.HomeViewModel
-import com.example.pokedex.routes.Routes
+import com.example.pokedex.core.routes.Routes
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, navigationController: NavHostController) {
@@ -113,7 +113,7 @@ fun Body(navigationController: NavHostController, pokemon: PokemonModel) {
         columns = GridCells.Fixed(2),
         content = {
             items(listOf(pokemon)) {
-                ItemPokemon(pokemon = it) { pokemon->
+                ItemPokemon(pokemon = it) { pokemon ->
                     navigationController.navigate(Routes.ScreenDetail.createRoute(pokemon.id.toString()))
                 }
             }
@@ -160,21 +160,24 @@ fun Header(
     navigationController: NavHostController
 ) {
     val textInput by homeViewModel.inputSearch.observeAsState(initial = "")
+    val searchEnable by homeViewModel.isSearchEnable.observeAsState(initial = false)
     Title(navigationController)
     SearchInput(textInput) { homeViewModel.onInputText(it) }
-    SearchButton(modifier, homeViewModel)
+    SearchButton(modifier, homeViewModel, searchEnable)
 }
 
 @Composable
-fun SearchButton(modifier: Modifier, homeViewModel: HomeViewModel) {
+fun SearchButton(modifier: Modifier, homeViewModel: HomeViewModel, searchEnable: Boolean) {
     Button(
         modifier = modifier.padding(
             end = dimensionResource(id = R.dimen.space_normal),
             bottom = dimensionResource(id = R.dimen.space_normal)
         ),
-        onClick = { homeViewModel.onSearchSelected() }, colors = ButtonDefaults.buttonColors(
+        enabled = searchEnable,
+        onClick = { homeViewModel.onSearchSelected() },
+        colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
-            disabledContainerColor = Color(0xFF78C8F9),
+            disabledContainerColor = Color.LightGray,
             contentColor = Color.Red,
             disabledContentColor = Color.White
         )

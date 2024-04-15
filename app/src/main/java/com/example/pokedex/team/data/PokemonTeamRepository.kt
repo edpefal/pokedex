@@ -1,5 +1,6 @@
 package com.example.pokedex.team.data
 
+import com.example.pokedex.pokemondetail.data.PokemonDetailModel
 import com.example.pokedex.team.data.db.PokemonTeamDao
 import com.example.pokedex.team.data.db.PokemonTeamMemberEntity
 import com.example.pokedex.team.presentation.PokemonTeamMemberModel
@@ -28,6 +29,19 @@ class PokemonTeamRepository @Inject constructor(private val teamDao: PokemonTeam
     suspend fun deleteTeamMember(pokemonTeamMemberModel: PokemonTeamMemberModel) {
         teamDao.deleteTeamMember(pokemonTeamMemberModel.toPokemonTeamMemberEntity())
     }
+
+    suspend fun addPokemonTeamMember(pokemonDetailModel: PokemonDetailModel) {
+        teamDao.addPokemonTeamMember(pokemonDetailModel.toPokemonTemMemberEntity())
+    }
+
+    private fun PokemonDetailModel.toPokemonTemMemberEntity(): PokemonTeamMemberEntity {
+        return PokemonTeamMemberEntity(
+            this.id.toInt(),
+            this.name,
+            this.sprites.frontDefault.orEmpty()
+        )
+    }
+
 
     fun PokemonTeamMemberEntity.toPokemonTeamMemberModel(): PokemonTeamMemberModel {
         return PokemonTeamMemberModel(this.id, this.name, this.image)

@@ -1,4 +1,4 @@
-package com.example.pokedex.routes
+package com.example.pokedex.core.routes
 
 sealed class Routes(val route: String) {
     data object ScreenHome: Routes("home_screen")

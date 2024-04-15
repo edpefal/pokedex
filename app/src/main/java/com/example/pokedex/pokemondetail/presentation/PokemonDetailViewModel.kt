@@ -34,10 +34,8 @@ class PokemonDetailViewModel @Inject constructor(
             showPokemonInfoUseCase(pokemon)
                 .catch { _uiState.value = PokemonDetailUIState.Error }
                 .collect {
-                    if(it is PokemonDetailUIState.Success){
-                        pokemonDetailModel = it.pokemonDetailModel
-                    }
-                    _uiState.value = it
+                    pokemonDetailModel = it
+                    _uiState.value = PokemonDetailUIState.Success(it)
                 }
 
 
