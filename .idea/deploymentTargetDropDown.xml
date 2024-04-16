@@ -5,6 +5,21 @@
       <entry key="app">
         <State />
       </entry>
+      <entry key="whenPokemonDetailStateSuccess_Then_ShowPokemonInfo()">
+        <State />
+      </entry>
+      <entry key="whenTeamScreenStateEmpty_Then_ShowEmptyMessage()">
+        <State />
+      </entry>
+      <entry key="whenTeamScreenStateError_Then_ShowErrorMessage()">
+        <State />
+      </entry>
+      <entry key="whenTeamScreenStateLoading_Then_ShowLoadingIndicator()">
+        <State />
+      </entry>
+      <entry key="whenTeamScreenStateSuccess_Then_ShowTeam()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>

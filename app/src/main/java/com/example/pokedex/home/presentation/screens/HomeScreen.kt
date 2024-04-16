@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -30,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,17 +39,51 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokedex.R
+import com.example.pokedex.core.TestTags.TAG_HOME_CARD_POKEMON
+import com.example.pokedex.core.TestTags.TAG_HOME_COLUMN
+import com.example.pokedex.core.TestTags.TAG_HOME_LOADING_INDICATOR
+import com.example.pokedex.core.TestTags.TAG_HOME_MESSAGE_BODY
+import com.example.pokedex.core.TestTags.TAG_HOME_SEARCH_RESULT
+import com.example.pokedex.core.TestTags.TAG_SEARCH_BUTTON
+import com.example.pokedex.core.TestTags.TAG_SEARCH_INPUT
+import com.example.pokedex.core.routes.Routes
 import com.example.pokedex.home.presentation.HomeUIState
 import com.example.pokedex.home.presentation.model.PokemonModel
 import com.example.pokedex.home.presentation.viewmodel.HomeViewModel
-import com.example.pokedex.core.routes.Routes
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, navigationController: NavHostController) {
     val homeUiState: HomeUIState by homeViewModel.homeViewState.observeAsState(initial = HomeUIState.Empty)
+    val textInput by homeViewModel.inputSearch.observeAsState(initial = "")
+    val searchEnable by homeViewModel.isSearchEnable.observeAsState(initial = false)
+    HomeContent(
+        textInput,
+        searchEnable,
+        navigationController,
+        homeUiState,
+        { homeViewModel.onInputText(it) }
+    ) { homeViewModel.onSearchSelected() }
+}
+
+@Composable
+fun HomeContent(
+    textInput: String,
+    searchEnable: Boolean,
+    navigationController: NavHostController,
+    homeUiState: HomeUIState,
+    onInputText: (String) -> Unit,
+    onSearchSelected: () -> Unit
+
+) {
     Box(Modifier.background(Color.Red)) {
-        Column {
-            Header(homeViewModel, Modifier.align(Alignment.End), navigationController)
+        Column(modifier = Modifier.testTag(TAG_HOME_COLUMN)) {
+            Header(
+                Modifier.align(Alignment.End),
+                textInput,
+                searchEnable,
+                { onInputText(it) },
+                { onSearchSelected() }
+            ) { navigationController.navigate(Routes.ScreenTeam.route) }
             when (homeUiState) {
                 HomeUIState.Empty -> MessageInBody(stringResource(id = R.string.home_empty_pokemon))
 
@@ -58,8 +91,11 @@ fun HomeScreen(homeViewModel: HomeViewModel, navigationController: NavHostContro
                 HomeUIState.Loading -> LoadingState()
 
                 is HomeUIState.Success -> {
-                    val pokemonModel = (homeUiState as HomeUIState.Success).pokemonModel
-                    Body(navigationController = navigationController, pokemon = pokemonModel)
+                    val pokemonModel = homeUiState.pokemonModel
+                    SearchResult(
+                        navigationController = navigationController,
+                        pokemon = pokemonModel
+                    )
                 }
             }
 
@@ -75,7 +111,7 @@ fun LoadingState() {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(modifier = Modifier.testTag(TAG_HOME_LOADING_INDICATOR))
     }
 }
 
@@ -92,7 +128,10 @@ fun MessageInBody(message: String) {
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(horizontal = dimensionResource(id = R.dimen.space_normal)),
+                .padding(horizontal = dimensionResource(id = R.dimen.space_normal))
+                .testTag(
+                    TAG_HOME_MESSAGE_BODY
+                ),
             text = message, fontSize = dimensionResource(
                 id = R.dimen.font_size_empty_state_message
             ).value.sp
@@ -102,15 +141,16 @@ fun MessageInBody(message: String) {
 }
 
 @Composable
-fun Body(navigationController: NavHostController, pokemon: PokemonModel) {
-    LazyVerticalGrid(
+fun SearchResult(navigationController: NavHostController, pokemon: PokemonModel) {
+    LazyColumn(
         modifier = Modifier
             .padding(top = dimensionResource(id = R.dimen.space_normal))
             .background(Color.White)
-            .fillMaxSize(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .fillMaxSize()
+            .testTag(TAG_HOME_SEARCH_RESULT),
+        //horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        columns = GridCells.Fixed(2),
+        //columns = GridCells.Fixed(2),
         content = {
             items(listOf(pokemon)) {
                 ItemPokemon(pokemon = it) { pokemon ->
@@ -124,8 +164,9 @@ fun Body(navigationController: NavHostController, pokemon: PokemonModel) {
 fun ItemPokemon(pokemon: PokemonModel, onItemSelected: (PokemonModel) -> Unit) {
     Card(
         modifier = Modifier
-            .width(200.dp)
-            .height(200.dp)
+            .fillMaxWidth().padding(all = 32.dp)
+            .height(350.dp)
+            .testTag(TAG_HOME_CARD_POKEMON)
             .clickable { onItemSelected(pokemon) }) {
         Column {
             AsyncImage(
@@ -155,26 +196,30 @@ fun ItemPokemon(pokemon: PokemonModel, onItemSelected: (PokemonModel) -> Unit) {
 
 @Composable
 fun Header(
-    homeViewModel: HomeViewModel,
     modifier: Modifier,
-    navigationController: NavHostController
+    textInput: String,
+    searchEnable: Boolean,
+    onInputText: (String) -> Unit,
+    onSearchSelected: () -> Unit,
+    onPokeballSelected: () -> Unit
 ) {
-    val textInput by homeViewModel.inputSearch.observeAsState(initial = "")
-    val searchEnable by homeViewModel.isSearchEnable.observeAsState(initial = false)
-    Title(navigationController)
-    SearchInput(textInput) { homeViewModel.onInputText(it) }
-    SearchButton(modifier, homeViewModel, searchEnable)
+
+    Title { onPokeballSelected() }
+    SearchInput(textInput) { onInputText(it) }
+    SearchButton(modifier, { onSearchSelected() }, searchEnable)
 }
 
 @Composable
-fun SearchButton(modifier: Modifier, homeViewModel: HomeViewModel, searchEnable: Boolean) {
+fun SearchButton(modifier: Modifier, onSearchSelected: () -> Unit, searchEnable: Boolean) {
     Button(
-        modifier = modifier.padding(
-            end = dimensionResource(id = R.dimen.space_normal),
-            bottom = dimensionResource(id = R.dimen.space_normal)
-        ),
+        modifier = modifier
+            .padding(
+                end = dimensionResource(id = R.dimen.space_normal),
+                bottom = dimensionResource(id = R.dimen.space_normal)
+            )
+            .testTag(TAG_SEARCH_BUTTON),
         enabled = searchEnable,
-        onClick = { homeViewModel.onSearchSelected() },
+        onClick = { onSearchSelected() },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
             disabledContainerColor = Color.LightGray,
@@ -191,7 +236,8 @@ fun SearchInput(textInput: String, onTextChange: (String) -> Unit) {
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(dimensionResource(id = R.dimen.space_normal)),
+            .padding(dimensionResource(id = R.dimen.space_normal))
+            .testTag(TAG_SEARCH_INPUT),
         value = textInput,
         onValueChange = { onTextChange(it) },
         placeholder = { Text(text = stringResource(id = R.string.home_header_search_placeholder)) },
@@ -209,7 +255,7 @@ fun SearchInput(textInput: String, onTextChange: (String) -> Unit) {
 }
 
 @Composable
-private fun Title(navigationController: NavHostController) {
+private fun Title(onPokeballSelected: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -233,7 +279,10 @@ private fun Title(navigationController: NavHostController) {
             modifier = Modifier
                 .size(dimensionResource(id = R.dimen.pokeball_size))
                 .align(Alignment.CenterVertically)
-                .clickable { navigationController.navigate(Routes.ScreenTeam.route) }
+                .clickable {
+                    onPokeballSelected()
+                    //navigationController.navigate(Routes.ScreenTeam.route) }
+                }
         )
     }
 }

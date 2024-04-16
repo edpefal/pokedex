@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -45,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +55,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.pokedex.R
+import com.example.pokedex.core.TestTags.TAG_DETAIL_HEADER
+import com.example.pokedex.core.TestTags.TAG_DETAIL_LOADING
+import com.example.pokedex.core.TestTags.TAG_DETAIL_MESSAGE_BODY
+import com.example.pokedex.core.TestTags.TAG_DETAIL_POKEMON_STATS
+import com.example.pokedex.core.TestTags.TAG_DETAIL_POKEMON_TYPE
 import com.example.pokedex.home.data.model.Stats
 import com.example.pokedex.pokemondetail.data.PokemonDetailModel
 import kotlinx.coroutines.launch
@@ -76,27 +81,41 @@ fun PokemonDetailScreen(
         floatingActionButton = { AddPokemonFab(pokemonDetailViewModel) },
         floatingActionButtonPosition = FabPosition.End,
         topBar = { DetailTopAppBar { coroutineScope.launch { navigationController.popBackStack() } } }) { innerPadding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            when (val state = uiState.value) {
-                PokemonDetailUIState.Error ->
-                    ErrorState(message = stringResource(id = R.string.pokemon_detail_error_message))
+        PokemonDetailContent(
+            uiState.value,
+            innerPadding,
+            addPokemonUIState.value,
+            { pokemonDetailViewModel.updateState(it) })
 
-                PokemonDetailUIState.Loading ->
-                    PokemonDetailLoadingState()
+    }
+}
 
-                is PokemonDetailUIState.Success -> {
-                    Content(
-                        innerPadding,
-                        state.pokemonDetailModel,
-                        addPokemonUIState,
-                        pokemonDetailViewModel
-                    )
-                }
+@Composable
+fun PokemonDetailContent(
+    uiState: PokemonDetailUIState,
+    innerPadding: PaddingValues,
+    addPokemonUIState: AddPokemonUIState,
+    updateState: (AddPokemonUIState) -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        when (uiState) {
+            PokemonDetailUIState.Error ->
+                ErrorState(message = stringResource(id = R.string.pokemon_detail_error_message))
+
+            PokemonDetailUIState.Loading ->
+                PokemonDetailLoadingState()
+
+            is PokemonDetailUIState.Success -> {
+                Content(
+                    innerPadding,
+                    uiState.pokemonDetailModel,
+                    addPokemonUIState,
+                    { updateState(it) }
+                )
             }
-
         }
 
     }
@@ -106,15 +125,15 @@ fun PokemonDetailScreen(
 private fun Content(
     innerPadding: PaddingValues,
     pokemonDetailModel: PokemonDetailModel,
-    addPokemonUIState: State<AddPokemonUIState>,
-    pokemonDetailViewModel: PokemonDetailViewModel
+    addPokemonUIState: AddPokemonUIState,
+    updateState: (AddPokemonUIState) -> Unit
 ) {
     Header(innerPadding, pokemonDetailModel)
     PokemonType(pokemonDetailModel)
     PokemonStats(pokemonDetailModel)
 
     val context = LocalContext.current
-    when (addPokemonUIState.value) {
+    when (addPokemonUIState) {
         AddPokemonUIState.Empty -> {}
         AddPokemonUIState.AlreadyExist -> Toast.makeText(
             context,
@@ -136,7 +155,7 @@ private fun Content(
             Toast.LENGTH_SHORT
         ).show()
     }
-    pokemonDetailViewModel.updateState(AddPokemonUIState.Empty)
+    updateState(AddPokemonUIState.Empty)
 }
 
 @Composable
@@ -147,7 +166,7 @@ fun PokemonDetailLoadingState() {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(modifier = Modifier.testTag(TAG_DETAIL_LOADING))
     }
 }
 
@@ -164,7 +183,10 @@ fun ErrorState(message: String) {
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(horizontal = dimensionResource(id = R.dimen.space_normal)),
+                .padding(horizontal = dimensionResource(id = R.dimen.space_normal))
+                .testTag(
+                    TAG_DETAIL_MESSAGE_BODY
+                ),
             text = message, fontSize = dimensionResource(
                 id = R.dimen.font_size_empty_state_message
             ).value.sp
@@ -175,15 +197,14 @@ fun ErrorState(message: String) {
 
 @Composable
 fun PokemonStats(pokemonDetailModel: PokemonDetailModel) {
-    val myList = listOf(0.45f, 0.59f, 0.7f, 0.2f, 0.8f)
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(50.dp), modifier = Modifier
+        verticalArrangement = Arrangement.spacedBy(30.dp), modifier = Modifier
             .fillMaxWidth()
             .padding(
                 all = dimensionResource(
                     id = R.dimen.space_normal
                 )
-            )
+            ).testTag(TAG_DETAIL_POKEMON_STATS)
     ) {
         items(pokemonDetailModel.stats) {
             ItemPokemonStat(stats = it)
@@ -242,7 +263,7 @@ fun PokemonType(pokemonDetailModel: PokemonDetailModel) {
             .fillMaxWidth()
             .padding(
                 all = dimensionResource(
-                    id = R.dimen.space_normal
+                    id = R.dimen.space_small
                 )
             )
     ) {
@@ -256,8 +277,8 @@ fun PokemonType(pokemonDetailModel: PokemonDetailModel) {
 fun ItemPokemonType(type: String) {
     Card(colors = CardDefaults.cardColors(containerColor = Color.Red)) {
         Text(
-            text = "$type",
-            Modifier.padding(8.dp),
+            text = type,
+            Modifier.padding(8.dp).testTag(TAG_DETAIL_POKEMON_TYPE),
             color = Color.White,
             fontWeight = FontWeight.SemiBold
         )
@@ -270,7 +291,7 @@ private fun Header(innerPadding: PaddingValues, pokemonDetailModel: PokemonDetai
     Row(
         Modifier
             .padding(innerPadding)
-            .fillMaxWidth(),
+            .fillMaxWidth().testTag(TAG_DETAIL_HEADER),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         AsyncImage(
@@ -288,15 +309,15 @@ private fun WeightHeightPower(pokemonDetailModel: PokemonDetailModel) {
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(start = dimensionResource(id = R.dimen.space_normal))
+            .padding(start = dimensionResource(id = R.dimen.space_small))
     ) {
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_normal)))
         Text(text = pokemonDetailModel.name, fontWeight = FontWeight.Bold, fontSize = 30.sp)
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_normal)))
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_small)))
         TextWithImage(text = pokemonDetailModel.id, image = R.drawable.ic_tag)
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_normal)))
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_small)))
         TextWithImage(text = pokemonDetailModel.weight, image = R.drawable.ic_weight)
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_normal)))
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.space_small)))
         TextWithImage(text = pokemonDetailModel.height, image = R.drawable.ic_straighten, 90f)
 
     }
@@ -319,7 +340,7 @@ fun TextWithImage(text: String, @DrawableRes image: Int, rotate: Float = 0f) {
 fun AddPokemonFab(pokemonDetailViewModel: PokemonDetailViewModel) {
     FloatingActionButton(onClick = {
         pokemonDetailViewModel.addPokemonTeamMember()
-    }, contentColor = Color.White, containerColor = Color.Green) {
+    }, contentColor = Color.White, containerColor = Color.Blue) {
         Icon(imageVector = Icons.Filled.Add, contentDescription = "add")
     }
 }

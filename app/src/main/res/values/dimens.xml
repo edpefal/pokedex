@@ -2,8 +2,9 @@
 <resources>
     <dimen name="space_normal">16dp</dimen>
     <dimen name="space_medium">8dp</dimen>
+    <dimen name="space_small">4dp</dimen>
     <dimen name="pokeball_size">32dp</dimen>
-    <dimen name="pokemon_detail_image_width">250dp</dimen>
+    <dimen name="pokemon_detail_image_width">200dp</dimen>
 
 
     <dimen name="font_size_header">28sp</dimen>
