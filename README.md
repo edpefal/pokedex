@@ -27,7 +27,7 @@ To get started with the project, follow these steps:
 
 - Clone this repository to your local machine using the following command
   ```
-  https://github.com/edpefal/pokedex.git
+  git clone https://github.com/edpefal/pokedex.git
   ```
 - Open the project in Android Studio or your preferred IDE.
 
