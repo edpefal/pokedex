@@ -30,12 +30,15 @@ class HomeViewModel @Inject constructor(private val getPokemonUseCase: GetPokemo
 
     fun isSearchEnable() = _inputSearch.value?.isNotEmpty() == true
 
-    fun onSearchSelected(){
-        if(isSearchEnable()) {
+    fun onSearchSelected() {
+        if (isSearchEnable()) {
             viewModelScope.launch {
                 val response = getPokemonUseCase.invoke(_inputSearch.value.orEmpty())
-                _homeViewState.postValue(response)
-
+                response?.let {
+                    _homeViewState.postValue(HomeUIState.Success(it))
+                } ?: run {
+                    _homeViewState.postValue(HomeUIState.Error)
+                }
             }
         }
     }

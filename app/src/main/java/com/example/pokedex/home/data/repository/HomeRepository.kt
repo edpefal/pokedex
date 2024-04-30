@@ -25,18 +25,19 @@ class HomeRepository @Inject constructor(
         }
     }*/
 
-    suspend fun getPokemonFromApi(pokemonNameOrNumber: String): HomeUIState {
+    suspend fun getPokemonFromApi(pokemonNameOrNumber: String): PokemonResponse? {
         return when (val result = homeService.getPokemon(pokemonNameOrNumber)) {
-            is ApiResult.Error -> HomeUIState.Error
+            is ApiResult.Error -> null
             is ApiResult.Success -> {
                 savePokemonToLocalStorage(result.data)
-                HomeUIState.Success(
+                result.data
+                /*HomeUIState.Success(
                     PokemonModel(
                         result.data.name.orEmpty(),
                         result.data.sprites?.frontDefault ?: "",
                         result.data.id ?: 0
                     )
-                )
+                )*/
             }
         }
     }
