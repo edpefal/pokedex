@@ -14,7 +14,7 @@ class GetPokemonUseCase @Inject constructor(private val homeRepository: HomeRepo
         }
     }
 
-    fun PokemonEntity.toPokemonModel(): PokemonModel {
+    private fun PokemonEntity.toPokemonModel(): PokemonModel {
         return PokemonModel(
             this.name,
             this.sprites.frontDefault.orEmpty(),
@@ -22,7 +22,7 @@ class GetPokemonUseCase @Inject constructor(private val homeRepository: HomeRepo
         )
     }
 
-    fun PokemonResponse.toPokemonModel(): PokemonModel {
+    private fun PokemonResponse.toPokemonModel(): PokemonModel {
         return PokemonModel(
             this.name.orEmpty(),
             this.sprites?.frontDefault.orEmpty(),

@@ -3,6 +3,7 @@ package com.example.pokedex.pokemondetail.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokedex.pokemondetail.data.PokemonDetailModel
+import com.example.pokedex.pokemondetail.domain.AddPokemonResult
 import com.example.pokedex.pokemondetail.domain.AddPokemonTeamMemberUseCase
 import com.example.pokedex.pokemondetail.domain.ShowPokemonInfoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +47,11 @@ class PokemonDetailViewModel @Inject constructor(
         viewModelScope.launch {
             pokemonDetailModel?.let {
                 val response = addPokemonTeamMemberUseCase(it)
-                _addPokemonUiState.value = response
+                when (response) {
+                    AddPokemonResult.AlreadyAdded -> _addPokemonUiState.value = AddPokemonUIState.AlreadyExist
+                    AddPokemonResult.Failure -> _addPokemonUiState.value = AddPokemonUIState.MaxNumber
+                    AddPokemonResult.Success -> _addPokemonUiState.value = AddPokemonUIState.Success
+                }
             }
         }
     }

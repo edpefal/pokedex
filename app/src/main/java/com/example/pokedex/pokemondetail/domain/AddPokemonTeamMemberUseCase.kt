@@ -6,19 +6,20 @@ import com.example.pokedex.team.data.PokemonTeamRepository
 import javax.inject.Inject
 
 const val MAX_NUMBER_OF_POKEMONS = 6
+
 class AddPokemonTeamMemberUseCase @Inject constructor(
     private val pokemonTeamRepository: PokemonTeamRepository
 ) {
 
-    suspend operator fun invoke(pokemonDetailModel: PokemonDetailModel): AddPokemonUIState {
+    suspend operator fun invoke(pokemonDetailModel: PokemonDetailModel): AddPokemonResult {
         val exist = pokemonTeamRepository.pokemonAlreadyInTeam(pokemonDetailModel.id)
         return if (exist) {
-            AddPokemonUIState.AlreadyExist
+            AddPokemonResult.AlreadyAdded
         } else if (pokemonTeamRepository.getTeamCount() < MAX_NUMBER_OF_POKEMONS) {
             pokemonTeamRepository.addPokemonTeamMember(pokemonDetailModel)
-            AddPokemonUIState.Success
+            AddPokemonResult.Success
         } else {
-            AddPokemonUIState.MaxNumber
+            AddPokemonResult.Failure
         }
     }
 }
